@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import axios from 'axios'
+ import { useEffect} from "react";
 
 
 
@@ -11,10 +12,14 @@ const App = () => {
     { title: "text 3 ", description: "description 3" },
   ]);
 
+
+
+useEffect(() => {
   axios.get('http://localhost:3000/api/notes')
-  .then((res)=>{
-    setNotes(res.data.notes)
-  })
+    .then((res) => {
+      setNotes(res.data.notes)
+    })
+}, []);
 
   return (
     <>
