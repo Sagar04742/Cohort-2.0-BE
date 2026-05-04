@@ -35,7 +35,7 @@ async function registerController(req, res) {
     const token = jwt.sign(
       {
         id: user._id,
-        username : user.username,
+        username: user.username,
       },
       process.env.JWT_SECRET,
       {
@@ -55,7 +55,6 @@ async function registerController(req, res) {
         profileImage: user.profileImage,
       },
     });
-    
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -88,7 +87,7 @@ async function loginController(req, res) {
     const token = jwt.sign(
       {
         id: user._id,
-        username : user.username,
+        username: user.username,
       },
       process.env.JWT_SECRET,
       {
@@ -116,4 +115,32 @@ async function loginController(req, res) {
   }
 }
 
-module.exports = { registerController, loginController };
+async function getMecontroller(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      user: {
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+module.exports = { registerController, loginController, getMecontroller };
