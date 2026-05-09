@@ -116,14 +116,25 @@ async function likePostController(req, res) {
   }
 }
 
-async function getFeedController(req,res) {
-  const userId = req.user.id
-  const posts = await postModel.find().populate("user").select("-user.password")
+async function getFeedController(req, res) {
+  const user = req.user;
+  const posts = await Promise.all(
+    (await postModel.find().populate("user").lean()).map(async (post) => {
+      const isLiked = await likeModel.findOne({
+        user: user.username,
+        post: post._id,
+      });
 
+      post.isLiked = !!isLiked 
+
+
+      return post
+    }),
+  );
   res.status(200).json({
     message: "posts fetched successfully",
-    posts
-  })
+    posts,
+  });
 }
 
 module.exports = {
@@ -131,5 +142,5 @@ module.exports = {
   getPostController,
   getPostDetailsController,
   likePostController,
-  getFeedController
+  getFeedController,
 };
