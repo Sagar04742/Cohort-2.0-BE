@@ -1,0 +1,127 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-card,
+.request-card,
+.lookup-card {
+  width: min(420px, 100%);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.profile-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-card .header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.profile-card .avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #30a39c;
+}
+
+.profile-card .user-meta {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.profile-card .user-meta h2 {
+  margin: 0;
+}
+
+.profile-card .stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.profile-card .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.profile-card .stat strong {
+  font-size: 1.2rem;
+}
+
+.profile-card .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.profile-card button,
+.lookup-card button,
+.request-card button {
+  border: none;
+  background: #30a39c;
+  color: #111;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.profile-card button:hover,
+.lookup-card button:hover,
+.request-card button:hover {
+  background: #2f8f86;
+}
+
+.lookup-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.lookup-card input {
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: whitesmoke;
+}
+
+.request-card .requests {
+  display: grid;
+  gap: 1rem;
+}
+
+.request-card .request {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-message {
+  width: min(420px, 100%);
+  color: #f3c623;
+  text-align: center;
+}
+
+.empty-profile {
+  color: #f3c623;
+}

@@ -76,7 +76,6 @@ async function likePostController(req, res) {
     const username = req.user.username;
     const postId = req.params.postId;
 
-    // 1. Check if the post exists
     const post = await postModel.findById(postId);
     if (!post) {
       return res.status(404).json({
@@ -84,32 +83,62 @@ async function likePostController(req, res) {
       });
     }
 
-    // 2. Check if the user already liked the post
     const isAlreadyLiked = await likeModel.findOne({
       post: postId,
       user: username,
     });
 
     if (isAlreadyLiked) {
-      // Return a 409 Conflict (or 400 Bad Request) with a clear message
       return res.status(409).json({
         message: "You have already liked this post",
       });
     }
 
-    // 3. Create the like since it doesn't exist yet
     const like = await likeModel.create({
       post: postId,
       user: username,
     });
 
+    const likeCount = await likeModel.countDocuments({ post: postId });
+
     res.status(201).json({
       message: "Post liked successfully",
       like,
+      likeCount,
     });
   } catch (error) {
-    // Catch any potential database errors (like invalid ObjectIds)
     console.error("Error liking post:", error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}
+
+async function unlikePostController(req, res) {
+  try {
+    const username = req.user.username;
+    const postId = req.params.postId;
+
+    const likeRecord = await likeModel.findOne({
+      post: postId,
+      user: username,
+    });
+
+    if (!likeRecord) {
+      return res.status(404).json({
+        message: "Like not found",
+      });
+    }
+
+    await likeModel.findByIdAndDelete(likeRecord._id);
+    const likeCount = await likeModel.countDocuments({ post: postId });
+
+    res.status(200).json({
+      message: "Post unliked successfully",
+      likeCount,
+    });
+  } catch (error) {
+    console.error("Error unliking post:", error);
     res.status(500).json({
       message: "Internal server error",
     });
@@ -125,10 +154,12 @@ async function getFeedController(req, res) {
         post: post._id,
       });
 
-      post.isLiked = !!isLiked 
+      const likeCount = await likeModel.countDocuments({ post: post._id });
 
+      post.isLiked = !!isLiked;
+      post.likeCount = likeCount;
 
-      return post
+      return post;
     }),
   );
   res.status(200).json({
@@ -142,5 +173,6 @@ module.exports = {
   getPostController,
   getPostDetailsController,
   likePostController,
+  unlikePostController,
   getFeedController,
 };
