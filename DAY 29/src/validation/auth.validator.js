@@ -16,6 +16,9 @@ const validation = (req, res, next) => {
 export const registerValidation = [
   body("username").isString().withMessage("Username must be string"),
   body("email").isEmail().withMessage("Email must be valid email address"),
-  body("password").isLength({min:6,max:12}).withMessage("Password must be between 6 to 12 characters"),
-  validation
+  body("password")
+    .isString().withMessage("Password must be a string")
+    .matches(/^[\S]{6,12}$/)
+    .withMessage("Password must be 6 to 12 characters with no whitespace"),
+  validation,
 ];
