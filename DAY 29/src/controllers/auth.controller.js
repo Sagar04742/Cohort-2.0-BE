@@ -1,8 +1,10 @@
-
-export async function register(req,res,next){
-    try{
-        throw new Error('Encounter an error while registering user')
-    }catch(err){
-        next(err)
-    }
+export async function register(req, res, next) {
+  try {
+    res.status(201).json({
+      message: "User registered successfully",
+    });
+  } catch (err) {
+    err.status = 400;
+    next(err);
+  }
 }
