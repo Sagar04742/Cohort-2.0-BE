@@ -8,7 +8,7 @@ const validate = (req, res, next) => {
   next();
 };
 
-export const registerValidation = [
+export const registerValidator = [
   body("username")
     .trim()
     .notEmpty()
@@ -27,3 +27,14 @@ export const registerValidation = [
     .withMessage("Password cannot contain whitespace"),
   validate,
 ];
+
+export const loginValidator = [
+  body("email")
+    .trim()
+    .isEmail().withMessage("Valid email is required")
+    .normalizeEmail(),
+  body("password")
+    .isLength({min:6}).withMessage("Password must be at least 6 characters long")
+    .matches(/^(?!.*\s)/).withMessage("Password cannot contain whitespace"),
+  validate,
+]
