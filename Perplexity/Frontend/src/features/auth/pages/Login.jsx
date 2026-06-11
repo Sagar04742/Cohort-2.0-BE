@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router';
+import React, { useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router";
+import { useAuth } from "../hooks/useAuth";
+import { useSelector } from "react-redux";
+
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const user = useSelector(state => state.auth.user)
+  const loading = useSelector(state => state.auth.loading)
+
+
+  const { handleLogin } = useAuth();
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login Form Submitted:', { email, password });
+
+    const payload = {
+      email,
+      password,
+    };
+
+    await handleLogin(payload)
+    navigate("/")
+    console.log("Login Form Submitted:", payload);
   };
+
+  if(!loading && user){
+    return <Navigate to="/" replace/>
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0d0d0d] px-4 font-sans text-zinc-100">
@@ -16,12 +39,10 @@ const Login = () => {
         <h2 className="text-2xl font-semibold text-center mb-8 tracking-tight">
           Welcome Back
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-sm text-zinc-400">
-              Email
-            </label>
+            <label className="block text-sm text-zinc-400">Email</label>
             <input
               type="email"
               value={email}
@@ -33,9 +54,7 @@ const Login = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm text-zinc-400">
-              Password
-            </label>
+            <label className="block text-sm text-zinc-400">Password</label>
             <input
               type="password"
               value={password}
@@ -55,7 +74,13 @@ const Login = () => {
         </form>
 
         <p className="mt-6 text-center text-sm text-zinc-400">
-          New here? <Link to="/register" className="text-[#44C7D4] hover:underline underline-offset-4">Create an account</Link>
+          New here?{" "}
+          <Link
+            to="/register"
+            className="text-[#44C7D4] hover:underline underline-offset-4"
+          >
+            Create an account
+          </Link>
         </p>
       </div>
     </div>

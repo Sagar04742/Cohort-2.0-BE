@@ -6,8 +6,4 @@ const model = new ChatGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-export async function testAi() {
-  model.invoke("What is MAANG?").then((res) => {
-    console.log(res.text);
-  });
-}
+
