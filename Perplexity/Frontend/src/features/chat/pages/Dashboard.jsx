@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat.js";
 
@@ -9,6 +10,7 @@ const IconChat    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="
 const IconMenu    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
 const IconLogout  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>;
 const IconSparkle = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/></svg>;
+const IconTrash   = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 
 const ACCENT        = "#44C7D4";
 const ACCENT_DIM    = "rgba(68,199,212,0.10)";
@@ -57,7 +59,24 @@ const MessageBubble = ({ msg }) => {
         background: isUser ? ACCENT : "rgba(255,255,255,0.05)",
         border: isUser ? "none" : "1px solid rgba(255,255,255,0.07)",
       }}>
-        {msg.content}
+        {isUser ? msg.content : (
+          <>
+            <style>{`
+              .ai-response p { margin: 0 0 8px; }
+              .ai-response p:last-child { margin: 0; }
+              .ai-response ul, .ai-response ol { margin: 6px 0 8px 16px; padding: 0; }
+              .ai-response li { margin-bottom: 4px; }
+              .ai-response strong { color: #fff; font-weight: 600; }
+              .ai-response code { background: rgba(255,255,255,0.1); border-radius: 4px; padding: 2px 6px; font-family: monospace; font-size: 13px; }
+              .ai-response pre { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0; }
+              .ai-response pre code { background: transparent; padding: 0; }
+              .ai-response h1, .ai-response h2, .ai-response h3 { color: #fff; margin: 10px 0 6px; font-size: 15px; }
+            `}</style>
+            <div className="ai-response">
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -72,11 +91,7 @@ const EmptyState = ({ onSuggestion }) => {
   ];
   return (
     <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 24px", height:"100%" }}>
-      <div style={{
-        width:46, height:46, borderRadius:13, marginBottom:18,
-        background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`,
-        display:"flex", alignItems:"center", justifyContent:"center", color:ACCENT,
-      }}>
+      <div style={{ width:46, height:46, borderRadius:13, marginBottom:18, background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`, display:"flex", alignItems:"center", justifyContent:"center", color:ACCENT }}>
         <IconSparkle />
       </div>
       <p style={{ fontSize:21, fontWeight:500, color:"rgba(255,255,255,0.88)", margin:"0 0 6px" }}>What do you want to know?</p>
@@ -99,16 +114,16 @@ const EmptyState = ({ onSuggestion }) => {
 
 const Dashboard = () => {
   const { user }                     = useSelector((state) => state.auth);
-  const { isLoading, currentChatId } = useSelector((state) => state.chat); // ✅ direct from Redux
+  const { isLoading, currentChatId } = useSelector((state) => state.chat);
   const chat                         = useChat();
 
   const [input, setInput]             = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [search, setSearch]           = useState("");
+  const [hoveredChatId, setHoveredChatId] = useState(null); // ✅ for showing delete on hover
   const messagesEndRef                = useRef(null);
   const textareaRef                   = useRef(null);
 
-  // ✅ uses currentChatId directly from Redux, always fresh
   const currentMessages = currentChatId
     ? (chat.chats[currentChatId]?.messages || [])
     : [];
@@ -126,7 +141,6 @@ const Dashboard = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [currentMessages.length, isLoading]);
 
-  // ✅ single handleSend, passes currentChatId directly from Redux
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
     chat.handleSendMessage({ message: input.trim(), chatId: currentChatId });
@@ -155,25 +169,17 @@ const Dashboard = () => {
 
         {/* Brand */}
         <div style={{ padding:"18px 16px 12px", display:"flex", alignItems:"center", gap:9 }}>
-          <div style={{
-            width:26, height:26, borderRadius:7, flexShrink:0,
-            background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`,
-            display:"flex", alignItems:"center", justifyContent:"center", color:ACCENT,
-          }}>
+          <div style={{ width:26, height:26, borderRadius:7, flexShrink:0, background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`, display:"flex", alignItems:"center", justifyContent:"center", color:ACCENT }}>
             <IconSparkle />
           </div>
           <span style={{ fontSize:14, fontWeight:500, letterSpacing:0.2, whiteSpace:"nowrap" }}>Perplexity</span>
-          <span style={{
-            marginLeft:"auto", fontSize:9, fontFamily:"monospace",
-            color:ACCENT, border:`1px solid ${ACCENT_BORDER}`,
-            borderRadius:4, padding:"2px 5px", background:ACCENT_DIM, whiteSpace:"nowrap",
-          }}>AGENT</span>
+          <span style={{ marginLeft:"auto", fontSize:9, fontFamily:"monospace", color:ACCENT, border:`1px solid ${ACCENT_BORDER}`, borderRadius:4, padding:"2px 5px", background:ACCENT_DIM, whiteSpace:"nowrap" }}>AGENT</span>
         </div>
 
-        {/* New chat */}
+        {/* ✅ New chat — now calls handleNewChat */}
         <div style={{ padding:"0 12px 10px" }}>
           <button
-            onClick={() => chat.handleSetCurrentChatId?.(null)}
+            onClick={() => chat.handleNewChat()}
             style={{
               width:"100%", display:"flex", alignItems:"center", gap:8,
               padding:"8px 10px", borderRadius:8, fontSize:13,
@@ -191,10 +197,7 @@ const Dashboard = () => {
 
         {/* Search */}
         <div style={{ padding:"0 12px 12px" }}>
-          <div style={{
-            display:"flex", alignItems:"center", gap:7, padding:"7px 10px",
-            borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)",
-          }}>
+          <div style={{ display:"flex", alignItems:"center", gap:7, padding:"7px 10px", borderRadius:8, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)" }}>
             <span style={{ color:"rgba(255,255,255,0.3)", flexShrink:0 }}><IconSearch /></span>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search chats…"
               style={{ background:"transparent", border:"none", outline:"none", fontSize:12, color:"rgba(255,255,255,0.7)", width:"100%" }}
@@ -203,9 +206,7 @@ const Dashboard = () => {
         </div>
 
         {/* Label */}
-        <p style={{ padding:"0 16px 6px", fontSize:10, fontFamily:"monospace", color:"rgba(255,255,255,0.22)", letterSpacing:"0.1em", textTransform:"uppercase" }}>
-          Recent
-        </p>
+        <p style={{ padding:"0 16px 6px", fontSize:10, fontFamily:"monospace", color:"rgba(255,255,255,0.22)", letterSpacing:"0.1em", textTransform:"uppercase" }}>Recent</p>
 
         {/* Chat list */}
         <div style={{ flex:1, overflowY:"auto", paddingBottom:8 }}>
@@ -213,28 +214,61 @@ const Dashboard = () => {
             chatList.length === 0
               ? <p style={{ padding:"12px 20px", fontSize:12, color:"rgba(255,255,255,0.25)" }}>No chats yet.</p>
               : chatList.map(c => {
-                  const active = currentChatId === c._id; // ✅ fixed
+                  const active = currentChatId === c._id;
+                  const hovered = hoveredChatId === c._id;
                   return (
-                    <button key={c._id} onClick={()=>chat.handleSelectChat(c._id)}
+                    <div
+                      key={c._id}
+                      onMouseEnter={() => setHoveredChatId(c._id)}
+                      onMouseLeave={() => setHoveredChatId(null)}
                       style={{
-                        width:"100%", display:"flex", alignItems:"center", gap:9,
-                        padding:"9px 12px", margin:"1px 0", borderRadius:8,
-                        border:"none", cursor:"pointer", textAlign:"left",
-                        background: active ? ACCENT_DIM : "transparent",
+                        display:"flex", alignItems:"center",
+                        margin:"1px 0", borderRadius:8,
+                        background: active ? ACCENT_DIM : hovered ? "rgba(255,255,255,0.04)" : "transparent",
                         transition:"background 0.12s",
                       }}
-                      onMouseEnter={e=>{ if(!active) e.currentTarget.style.background="rgba(255,255,255,0.04)"; }}
-                      onMouseLeave={e=>{ if(!active) e.currentTarget.style.background="transparent"; }}
                     >
-                      <span style={{ color: active ? ACCENT : "rgba(255,255,255,0.28)", flexShrink:0 }}><IconChat /></span>
-                      <span style={{
-                        fontSize:12, fontWeight: active ? 500 : 400,
-                        color: active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.52)",
-                        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-                      }}>
-                        {c.title || "Untitled chat"}
-                      </span>
-                    </button>
+                      {/* Chat select button */}
+                      <button
+                        onClick={() => chat.handleSelectChat(c._id)}
+                        style={{
+                          flex:1, display:"flex", alignItems:"center", gap:9,
+                          padding:"9px 12px", border:"none", cursor:"pointer",
+                          background:"transparent", textAlign:"left",
+                        }}
+                      >
+                        <span style={{ color: active ? ACCENT : "rgba(255,255,255,0.28)", flexShrink:0 }}><IconChat /></span>
+                        <span style={{
+                          fontSize:12, fontWeight: active ? 500 : 400,
+                          color: active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.52)",
+                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+                        }}>
+                          {c.title || "Untitled chat"}
+                        </span>
+                      </button>
+
+                      {/* ✅ Delete button — shows on hover */}
+                      {hovered && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // don't trigger chat select
+                            chat.handleDeleteChat(c._id);
+                          }}
+                          style={{
+                            flexShrink:0, marginRight:8,
+                            width:24, height:24, borderRadius:6,
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            background:"rgba(255,255,255,0.06)", border:"none", cursor:"pointer",
+                            color:"rgba(255,80,80,0.7)", transition:"all 0.12s",
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background="rgba(255,80,80,0.15)"; e.currentTarget.style.color="rgb(255,80,80)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.06)"; e.currentTarget.style.color="rgba(255,80,80,0.7)"; }}
+                          title="Delete chat"
+                        >
+                          <IconTrash />
+                        </button>
+                      )}
+                    </div>
                   );
                 })
           )}
@@ -246,21 +280,12 @@ const Dashboard = () => {
             onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}
           >
-            <div style={{
-              width:26, height:26, borderRadius:"50%", flexShrink:0,
-              background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`,
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:11, fontWeight:600, color:ACCENT,
-            }}>
+            <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0, background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, color:ACCENT }}>
               {user?.name?.[0]?.toUpperCase() || "U"}
             </div>
             <div style={{ minWidth:0 }}>
-              <p style={{ fontSize:12, fontWeight:500, margin:0, color:"rgba(255,255,255,0.78)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                {user?.name || "User"}
-              </p>
-              <p style={{ fontSize:10, margin:0, color:"rgba(255,255,255,0.28)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                {user?.email || ""}
-              </p>
+              <p style={{ fontSize:12, fontWeight:500, margin:0, color:"rgba(255,255,255,0.78)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.name || "User"}</p>
+              <p style={{ fontSize:10, margin:0, color:"rgba(255,255,255,0.28)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.email || ""}</p>
             </div>
             <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.22)", flexShrink:0 }}><IconLogout /></span>
           </div>
@@ -271,10 +296,7 @@ const Dashboard = () => {
       <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, background:"#0D0D0D" }}>
 
         {/* Header */}
-        <header style={{
-          display:"flex", alignItems:"center", gap:12,
-          padding:"13px 20px", borderBottom:"1px solid rgba(255,255,255,0.05)", flexShrink:0,
-        }}>
+        <header style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 20px", borderBottom:"1px solid rgba(255,255,255,0.05)", flexShrink:0 }}>
           <button onClick={()=>setSidebarOpen(v=>!v)}
             style={{ background:"transparent", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.38)", padding:4, borderRadius:6, display:"flex", alignItems:"center", transition:"color 0.12s" }}
             onMouseEnter={e=>e.currentTarget.style.color="rgba(255,255,255,0.75)"}
@@ -283,7 +305,6 @@ const Dashboard = () => {
             <IconMenu />
           </button>
 
-          {/* ✅ uses currentChatId directly from Redux */}
           <span style={{ fontSize:13, color:"rgba(255,255,255,0.4)", fontWeight:400 }}>
             {currentChatId ? (chat.chats[currentChatId]?.title || "Untitled chat") : "New chat"}
           </span>

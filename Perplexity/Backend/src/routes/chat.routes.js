@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  deleteChat,
   getChats,
   getMessages,
   sendMessage,
@@ -14,6 +15,6 @@ chatRouter.get("/", authUser, getChats);
 
 chatRouter.get("/:chatId/messages", authUser, getMessages);
 
-chatRouter.delete("/delete/:chatId", authUser);
+chatRouter.delete("/delete/:chatId", authUser , deleteChat);
 
 export default chatRouter;

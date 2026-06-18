@@ -14,17 +14,18 @@ const mistralModel = new ChatMistralAI({
   apiKey: process.env.MISTRAL_API_KEY,
 });
 
-export async function generateResponse(messages) {
-  const response = await geminiModel.invoke(
-    messages.map((msg) => {
-      if (msg.role == "user") {
-        return new HumanMessage(msg.content);
-      } else if(msg.role == "ai"){
-        return new AIMessage(msg.content);
-      }
-    }),
-  );
+export async function generateResponse(messages, streaming = false) {
+  const formattedMessages = messages.map((msg) => {
+    if (msg.role === "user") return new HumanMessage(msg.content);
+    if (msg.role === "ai") return new AIMessage(msg.content);
+  });
 
+  if (streaming) {
+    const stream = await geminiModel.stream(formattedMessages);
+    return stream;
+  }
+
+  const response = await geminiModel.invoke(formattedMessages);
   return response.text;
 }
 

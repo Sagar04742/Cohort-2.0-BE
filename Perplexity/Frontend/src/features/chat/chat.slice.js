@@ -10,15 +10,24 @@ const chatSlice = createSlice({
   },
   reducers: {
 
-    // Replaces entire chats object (used when loading all chats from backend)
     setChats: (state, action) => {
       state.chats = action.payload;
     },
 
-    // Appends a single message to a specific chat
     addMessage: (state, action) => {
       const { chatId, message } = action.payload;
-      state.chats[chatId].messages.push(message);
+      if (state.chats[chatId]) {
+        state.chats[chatId].messages.push(message);
+      }
+    },
+
+    // ✅ New — updates content of one specific message by its ID
+    updateLastMessage: (state, action) => {
+      const { chatId, messageId, content } = action.payload;
+      const chat = state.chats[chatId];
+      if (!chat) return;
+      const msg = chat.messages.find((m) => m._id === messageId);
+      if (msg) msg.content = content;
     },
 
     setCurrentChatId: (state, action) => {
@@ -36,5 +45,13 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setChats, addMessage, setCurrentChatId, setLoading, setError } = chatSlice.actions;
+export const {
+  setChats,
+  addMessage,
+  updateLastMessage,
+  setCurrentChatId,
+  setLoading,
+  setError,
+} = chatSlice.actions;
+
 export default chatSlice.reducer;
