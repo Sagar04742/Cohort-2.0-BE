@@ -13,12 +13,12 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: "http://localhost:5173", // ✅ Removed the trailing slash
-    credentials: true,               // ✅ Changed string "true" to boolean true
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
+    exposedHeaders: ["X-Chat-Id", "X-Chat-Title", "X-User-Message-Id"], // ✅ add this
   })
 );
-
 
 app.use("/api/auth", authRouter);
 app.use("/api/chats",chatRouter)

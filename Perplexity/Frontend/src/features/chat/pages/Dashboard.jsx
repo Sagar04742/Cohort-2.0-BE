@@ -124,9 +124,9 @@ const Dashboard = () => {
   const messagesEndRef                = useRef(null);
   const textareaRef                   = useRef(null);
 
-  const currentMessages = currentChatId
-    ? (chat.chats[currentChatId]?.messages || [])
-    : [];
+ const currentMessages = currentChatId
+  ? (chat.chats[currentChatId]?.messages || [])
+  : (chat.chats["pending-new-chat"]?.messages || []);
 
   const chatList = Object.values(chat.chats).filter(c =>
     c.title?.toLowerCase().includes(search.toLowerCase())

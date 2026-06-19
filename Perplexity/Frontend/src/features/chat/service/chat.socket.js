@@ -7,7 +7,7 @@ export const initializeSocketConnection = () => {
   // Don't create a new connection if one already exists
   if (socket) return socket;
 
-  socket = io("http://localhost:3000", {
+  socket = io(import.meta.env.VITE_API_URL, {
     withCredentials: true, // sends your auth cookie
   });
 

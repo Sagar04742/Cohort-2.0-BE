@@ -1,21 +1,18 @@
 import nodemailer from "nodemailer";
 
+// ✅ Simple App Password auth — no OAuth2, no expiring tokens
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    type: "OAuth2",
-    user: process.env.GOOGLE_USER,
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-    accessToken: process.env.GOOGLE_ACCESS_TOKEN,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD, // 16-character app password
   },
 });
 
 export async function sendEmail({ to, subject, html, text }) {
   try {
     const mailOption = {
-      from: process.env.GOOGLE_USER,
+      from: process.env.EMAIL_USER,
       to,
       subject,
       html,

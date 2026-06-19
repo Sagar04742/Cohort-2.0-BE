@@ -173,7 +173,7 @@ export async function verifyEmail(req, res) {
       <p style="color: #555; font-size: 15px;">
         Your email has been successfully verified. You can now log in to your account.
       </p>
-      <a href="http://localhost:3000/login" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a>
+      <a href="${process.env.FRONTEND_URL}/login" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a>
     </div>`;
 
     return res.send(html);
