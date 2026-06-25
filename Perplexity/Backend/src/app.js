@@ -7,6 +7,19 @@ import chatRouter from "./routes/chat.routes.js";
 
 const app = express();
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 attempts per 15 minutes
+  message: { error: "Too many requests, please try again later." }
+});
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 messages per minute
+  message: { error: "Too many messages, please slow down." }
+});
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -20,9 +33,8 @@ app.use(
   })
 );
 
-app.use("/api/auth", authRouter);
-app.use("/api/chats",chatRouter)
-
+app.use("/api/auth", authLimiter, authRouter);
+app.use("/api/chats", chatLimiter, chatRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Server is running" });

@@ -101,7 +101,7 @@ const Register = () => {
       await handleRegister({ username, email, password });
       navigate("/");
     } catch (err) {
-      setFormError("Couldn't create your account. Try a different email.");
+      setFormError("Couldn't create your account. Try a different email.",err.message);
     } finally {
       setSubmitting(false);
     }
@@ -154,7 +154,7 @@ const Register = () => {
             </div>
           </div>
           <h1 style={{ fontSize: 13, fontWeight: 600, letterSpacing: 1.5, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", margin: 0 }}>
-            Perplexity
+            PolyMind
           </h1>
         </div>
 

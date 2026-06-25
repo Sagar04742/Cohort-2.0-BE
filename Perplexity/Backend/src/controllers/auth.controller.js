@@ -31,12 +31,12 @@ export async function register(req, res) {
     try {
       await sendEmail({
         to: email,
-        subject: "Welcome to Perplexity!",
+        subject: "Welcome to PolyMind!",
         html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #1a1a2e;">Hey ${username}! 👋</h2>
         <p style="color: #555; font-size: 15px;">
-          Welcome to <strong>Perplexity</strong>. We're glad to have you on board.
+          Welcome to <strong>PolyMind</strong>. We're glad to have you on board.
         </p>
         <p>
           Please click the link below to verify your email address:
@@ -47,7 +47,7 @@ export async function register(req, res) {
         </p>
       </div>
     `,
-        text: `Hey ${username}, welcome to Perplexity!`,
+        text: `Hey ${username}, welcome to PolyMind!`,
       });
     } catch (mailError) {
       console.error("Failed to send welcome email:", mailError);
@@ -63,7 +63,7 @@ export async function register(req, res) {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Something went wrong!" });
   }
 }
 
@@ -79,22 +79,22 @@ export async function login(req, res) {
         success: false,
       });
     }
-    const isPasswordMatch = await user.comparePassword(password)
+    const isPasswordMatch = await user.comparePassword(password);
 
-    if(! isPasswordMatch){
+    if (!isPasswordMatch) {
       return res.status(400).json({
-        message : "Invalid email or password",
+        message: "Invalid email or password",
         success: false,
-        err: "Incorrect password"}
-      )
+        err: "Incorrect password",
+      });
     }
 
-    if(!user.verified){
+    if (!user.verified) {
       return res.status(400).json({
         messgae: "Please verify your email before logging in",
         success: false,
-        err: "Email not verified"
-      })
+        err: "Email not verified",
+      });
     }
 
     const token = jwt.sign(
@@ -102,10 +102,16 @@ export async function login(req, res) {
         id: user._id,
         email: user.email,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET,{
+        expiresIn: "24h"
+      }
     );
 
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
 
     return res.status(200).json({
       message: "Login successful",
@@ -114,19 +120,19 @@ export async function login(req, res) {
         id: user._id,
         username: user.username,
         email: user.email,
-        verified: user.verified
-      }
+        verified: user.verified,
+      },
     });
   } catch (error) {
     res.status(500).json({
       message: "Login failed",
       success: false,
-      err: error.message,
+      err: "Something went wrong!",
     });
   }
 }
 
-export async function getMe(req,res) {
+export async function getMe(req, res) {
   const userId = req.user.id;
 
   const user = await userModel.findById(userId).select("-password");
@@ -179,9 +185,18 @@ export async function verifyEmail(req, res) {
     return res.send(html);
   } catch (error) {
     res.status(500).json({
-      message: "Invalid or expired password",
+      message: "Invalid or expired token",
       success: false,
-      err: error.message,
+      err: "Something went wrong!",
     });
   }
+}
+
+export async function logout(req, res) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  return res.status(200).json({ message: "Logged out successfully", success: true });
 }

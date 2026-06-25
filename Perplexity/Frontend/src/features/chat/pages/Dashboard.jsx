@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import { useChat } from "../hooks/useChat.js";
+import { useAuth } from "../hooks/useAuth.js";
 
 const IconPlus    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>;
 const IconSend    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>;
@@ -116,21 +118,24 @@ const Dashboard = () => {
   const { user }                     = useSelector((state) => state.auth);
   const { isLoading, currentChatId } = useSelector((state) => state.chat);
   const chat                         = useChat();
+  const { handleLogout }             = useAuth();       // ✅ logout hook
+  const navigate                     = useNavigate();   // ✅ for redirect after logout
 
-  const [input, setInput]             = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [search, setSearch]           = useState("");
-  const [hoveredChatId, setHoveredChatId] = useState(null); // ✅ for showing delete on hover
-  const messagesEndRef                = useRef(null);
-  const textareaRef                   = useRef(null);
+  const [input, setInput]                 = useState("");
+  const [sidebarOpen, setSidebarOpen]     = useState(true);
+  const [search, setSearch]               = useState("");
+  const [hoveredChatId, setHoveredChatId] = useState(null);
+  const messagesEndRef                    = useRef(null);
+  const textareaRef                       = useRef(null);
 
- const currentMessages = currentChatId
-  ? (chat.chats[currentChatId]?.messages || [])
-  : (chat.chats["pending-new-chat"]?.messages || []);
+  const currentMessages = currentChatId
+    ? (chat.chats[currentChatId]?.messages || [])
+    : (chat.chats["pending-new-chat"]?.messages || []);
 
-  const chatList = Object.values(chat.chats).filter(c =>
-    c.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  // ✅ filter out the "pending-new-chat" key from the sidebar list
+  const chatList = Object.values(chat.chats)
+    .filter(c => c._id && c._id !== "pending-new-chat")
+    .filter(c => c.title?.toLowerCase().includes(search.toLowerCase()));
 
   useEffect(() => {
     chat.initializeSocketConnection();
@@ -140,6 +145,12 @@ const Dashboard = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [currentMessages.length, isLoading]);
+
+  // ✅ logout handler — clears cookie, clears Redux, redirects to login
+  const onLogout = async () => {
+    await handleLogout();
+    navigate("/login");
+  };
 
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
@@ -172,11 +183,11 @@ const Dashboard = () => {
           <div style={{ width:26, height:26, borderRadius:7, flexShrink:0, background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`, display:"flex", alignItems:"center", justifyContent:"center", color:ACCENT }}>
             <IconSparkle />
           </div>
-          <span style={{ fontSize:14, fontWeight:500, letterSpacing:0.2, whiteSpace:"nowrap" }}>Perplexity</span>
+          <span style={{ fontSize:14, fontWeight:500, letterSpacing:0.2, whiteSpace:"nowrap" }}>PolyMind</span>
           <span style={{ marginLeft:"auto", fontSize:9, fontFamily:"monospace", color:ACCENT, border:`1px solid ${ACCENT_BORDER}`, borderRadius:4, padding:"2px 5px", background:ACCENT_DIM, whiteSpace:"nowrap" }}>AGENT</span>
         </div>
 
-        {/* ✅ New chat — now calls handleNewChat */}
+        {/* New chat */}
         <div style={{ padding:"0 12px 10px" }}>
           <button
             onClick={() => chat.handleNewChat()}
@@ -214,7 +225,7 @@ const Dashboard = () => {
             chatList.length === 0
               ? <p style={{ padding:"12px 20px", fontSize:12, color:"rgba(255,255,255,0.25)" }}>No chats yet.</p>
               : chatList.map(c => {
-                  const active = currentChatId === c._id;
+                  const active  = currentChatId === c._id;
                   const hovered = hoveredChatId === c._id;
                   return (
                     <div
@@ -222,20 +233,14 @@ const Dashboard = () => {
                       onMouseEnter={() => setHoveredChatId(c._id)}
                       onMouseLeave={() => setHoveredChatId(null)}
                       style={{
-                        display:"flex", alignItems:"center",
-                        margin:"1px 0", borderRadius:8,
+                        display:"flex", alignItems:"center", margin:"1px 0", borderRadius:8,
                         background: active ? ACCENT_DIM : hovered ? "rgba(255,255,255,0.04)" : "transparent",
                         transition:"background 0.12s",
                       }}
                     >
-                      {/* Chat select button */}
                       <button
                         onClick={() => chat.handleSelectChat(c._id)}
-                        style={{
-                          flex:1, display:"flex", alignItems:"center", gap:9,
-                          padding:"9px 12px", border:"none", cursor:"pointer",
-                          background:"transparent", textAlign:"left",
-                        }}
+                        style={{ flex:1, display:"flex", alignItems:"center", gap:9, padding:"9px 12px", border:"none", cursor:"pointer", background:"transparent", textAlign:"left" }}
                       >
                         <span style={{ color: active ? ACCENT : "rgba(255,255,255,0.28)", flexShrink:0 }}><IconChat /></span>
                         <span style={{
@@ -247,16 +252,11 @@ const Dashboard = () => {
                         </span>
                       </button>
 
-                      {/* ✅ Delete button — shows on hover */}
                       {hovered && (
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // don't trigger chat select
-                            chat.handleDeleteChat(c._id);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); chat.handleDeleteChat(c._id); }}
                           style={{
-                            flexShrink:0, marginRight:8,
-                            width:24, height:24, borderRadius:6,
+                            flexShrink:0, marginRight:8, width:24, height:24, borderRadius:6,
                             display:"flex", alignItems:"center", justifyContent:"center",
                             background:"rgba(255,255,255,0.06)", border:"none", cursor:"pointer",
                             color:"rgba(255,80,80,0.7)", transition:"all 0.12s",
@@ -274,18 +274,31 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* User footer */}
+        {/* ✅ User footer — clicking anywhere on it logs out */}
         <div style={{ borderTop:"1px solid rgba(255,255,255,0.06)", padding:12 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 10px", borderRadius:8, cursor:"pointer", transition:"background 0.12s" }}
+          <div
+            onClick={onLogout}
+            style={{ display:"flex", alignItems:"center", gap:9, padding:"8px 10px", borderRadius:8, cursor:"pointer", transition:"background 0.12s" }}
             onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}
           >
-            <div style={{ width:26, height:26, borderRadius:"50%", flexShrink:0, background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:600, color:ACCENT }}>
-              {user?.name?.[0]?.toUpperCase() || "U"}
+            <div style={{
+              width:26, height:26, borderRadius:"50%", flexShrink:0,
+              background:ACCENT_DIM, border:`1px solid ${ACCENT_BORDER}`,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:11, fontWeight:600, color:ACCENT,
+            }}>
+              {/* ✅ fixed: using username not name */}
+              {user?.username?.[0]?.toUpperCase() || "U"}
             </div>
             <div style={{ minWidth:0 }}>
-              <p style={{ fontSize:12, fontWeight:500, margin:0, color:"rgba(255,255,255,0.78)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.name || "User"}</p>
-              <p style={{ fontSize:10, margin:0, color:"rgba(255,255,255,0.28)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.email || ""}</p>
+              {/* ✅ fixed: using username not name */}
+              <p style={{ fontSize:12, fontWeight:500, margin:0, color:"rgba(255,255,255,0.78)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {user?.username || "User"}
+              </p>
+              <p style={{ fontSize:10, margin:0, color:"rgba(255,255,255,0.28)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {user?.email || ""}
+              </p>
             </div>
             <span style={{ marginLeft:"auto", color:"rgba(255,255,255,0.22)", flexShrink:0 }}><IconLogout /></span>
           </div>
