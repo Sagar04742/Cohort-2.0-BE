@@ -20,8 +20,13 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
-  },{
-    path:"/dashboard",
-    element: <Navigate to="/" replace/>
+  },
+  {
+    path: "/dashboard",
+    element: <Navigate to="/" replace />
+  },
+  {
+    path: "*",                              // ✅ catch-all — no more ugly React errors
+    element: <Navigate to="/" replace />
   }
 ]);

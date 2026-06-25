@@ -41,7 +41,7 @@ export async function register(req, res) {
         <p>
           Please click the link below to verify your email address:
         </p>
-        <a href="${process.env.FRONTEND_URL}/api/auth/verify-email?token=${emailVarificationToken}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
+        <a href="${process.env.BACKEND_URL}/api/auth/verify-email?token=${emailVarificationToken}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
         <p style="color: #999; font-size: 12px;">
           If you didn't create this account, ignore this email.
         </p>

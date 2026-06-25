@@ -7,6 +7,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD, // 16-character app password
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000, // 10 seconds max for SMTP greeting
+  socketTimeout: 15000,
 });
 
 export async function sendEmail({ to, subject, html, text }) {

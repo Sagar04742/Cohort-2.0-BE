@@ -4,7 +4,8 @@ import authRouter from "./routes/auth.routes.js";
 import morgan from "morgan";
 import cors from "cors";
 import chatRouter from "./routes/chat.routes.js";
-
+import {rateLimit} from "express-rate-limit"
+ 
 const app = express();
 
 const authLimiter = rateLimit({

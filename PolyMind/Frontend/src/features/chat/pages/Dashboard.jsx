@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useChat } from "../hooks/useChat.js";
-import { useAuth } from "../hooks/useAuth.js";
+import { useAuth } from "../../auth/hooks/useAuth.js";
 
 const IconPlus    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>;
 const IconSend    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>;
