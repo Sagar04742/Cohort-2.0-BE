@@ -1,8 +1,10 @@
 import express from 'express'
+import { validateRegisterUser } from '../validator/auth.validator.js'
+import { register } from '../controllers/auth.controller.js'
 
-authRouter = express.Router()
+const authRouter = express.Router()
 
-authRouter.p
+authRouter.post('/register', validateRegisterUser, register)
 
 
 export default authRouter
