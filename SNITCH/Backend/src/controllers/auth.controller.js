@@ -44,7 +44,8 @@ export const register = async (req, res) => {
             email,
             contact,
             password,
-            fullname
+            fullname,
+            role: isSeller ? "seller" : "buyer"
         })
 
         await user.save();
