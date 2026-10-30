@@ -5,7 +5,7 @@ import AuthLayout from "../components/AuthLayout";
 import AuthField, { inputClass } from "../components/AuthField";
 import PasswordField from "../components/PasswordField";
 import GoogleButton from "../components/GoogleButton";
-import registerImage from "../../../assets/auth-register.jpg";
+import registerImage from "../../../assets/auth-register-alt.jpg";
 
 const fields = [
   { name: "fullname", label: "Full name", type: "text", autoComplete: "name" },

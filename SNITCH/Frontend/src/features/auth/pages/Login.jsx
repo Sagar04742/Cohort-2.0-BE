@@ -41,7 +41,6 @@ const Login = () => {
   return (
     <AuthLayout
       image={loginImage}
-      imageClass="grayscale brightness-[0.55] contrast-125"
       quote="Welcome back. The new drop is waiting"
     >
       <header className="mb-[clamp(1.5rem,6vh,3.5rem)]">
