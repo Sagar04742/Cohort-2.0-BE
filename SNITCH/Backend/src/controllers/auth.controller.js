@@ -88,6 +88,7 @@ export const login = async (req, res) => {
 }
 
 export const googleLogin = async (req, res) => {
+    // passport.js already finds/creates the DB user and sets it as req.user
     setAuthCookie(req.user, res);
 
     res.redirect(`${config.FRONTEND_URL}/`);
